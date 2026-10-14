@@ -6,6 +6,7 @@ import pytest
 from typer.testing import CliRunner
 
 from purple_range.cli.main import app
+from purple_range.config.settings import get_settings
 
 runner = CliRunner()
 
@@ -15,6 +16,7 @@ def setup_cli_env(temp_db_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Set temporary database path for CLI commands."""
     monkeypatch.setenv("PURPLE_DB_PATH", str(temp_db_path))
     monkeypatch.setenv("PURPLE_ENVIRONMENT", "testing")
+    get_settings.cache_clear()
 
 
 def test_cli_version() -> None:

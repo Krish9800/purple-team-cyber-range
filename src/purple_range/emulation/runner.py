@@ -1,6 +1,9 @@
 """Adversary Emulation Engine executing safe atomic MITRE ATT&CK technique tests."""
 
 import asyncio
+import contextlib
+import os
+import signal
 import subprocess  # nosec B404: Subprocess required for atomic adversary emulation
 import time
 from datetime import UTC, datetime
@@ -68,6 +71,7 @@ class AdversaryEmulationEngine:
                 command,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
+                start_new_session=True,
             )
 
             try:
@@ -78,8 +82,13 @@ class AdversaryEmulationEngine:
                 status = EmulationStatus.COMPLETED
                 error_msg: str | None = None
             except TimeoutError:
-                proc.kill()
-                await proc.wait()
+                if proc.pid:
+                    try:
+                        os.killpg(proc.pid, signal.SIGKILL)
+                    except (ProcessLookupError, OSError):
+                        proc.kill()
+                with contextlib.suppress(TimeoutError):
+                    await asyncio.wait_for(proc.wait(), timeout=1.0)
                 stdout_bytes, stderr_bytes = b"", b"Execution timed out"
                 exit_code = 124
                 status = EmulationStatus.TIMED_OUT

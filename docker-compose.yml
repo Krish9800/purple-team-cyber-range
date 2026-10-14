@@ -1,0 +1,31 @@
+services:
+  purple-range:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: purple-team-cyber-range:latest
+    container_name: purple-cyber-range
+    user: "10001:10001"
+    read_only: false
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      - "8000:8000"
+    environment:
+      - PURPLE_ENVIRONMENT=production
+      - PURPLE_DB_PATH=/app/data/purple_range.db
+      - PURPLE_DEBUG=false
+    volumes:
+      - purple_data:/app/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+
+volumes:
+  purple_data:
+    name: purple_range_data
