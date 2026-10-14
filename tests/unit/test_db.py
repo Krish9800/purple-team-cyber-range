@@ -92,7 +92,7 @@ def test_playbook_crud(repo: PurpleRangeRepository) -> None:
     assert fetched_updated.name == "Ransomware Scenario Updated"
 
     all_playbooks = repo.list_playbooks()
-    assert len(all_playbooks) == 1
+    assert len(all_playbooks) >= 3
     assert repo.get_playbook("nonexistent") is None
 
 

@@ -43,6 +43,34 @@ class PurpleRangeRepository:
         """Create database tables and performance indices if they do not exist."""
         with self.db.connection() as conn:
             conn.executescript(SCHEMA_DDL)
+        self._seed_default_playbooks()
+
+    def _seed_default_playbooks(self) -> None:
+        """Ensure standard cyber range playbooks are seeded into the repository."""
+        default_playbooks = [
+            CampaignPlaybook(
+                playbook_id="ransomware-killchain",
+                name="Ransomware Kill Chain",
+                description=(
+                    "Emulates local discovery, privilege escalation, "
+                    "and defense evasion indicators."
+                ),
+                technique_ids=["T1087.001", "T1548.003", "T1070.004"],
+                author="Purple-Team Range Core",
+            ),
+            CampaignPlaybook(
+                playbook_id="apt-recon-persistence",
+                name="APT Discovery & Persistence Chain",
+                description=(
+                    "Emulates network enumeration, credential hunting, and autostart persistence."
+                ),
+                technique_ids=["T1046", "T1003.008", "T1547.001"],
+                author="Purple-Team Range Core",
+            ),
+        ]
+        for pb in default_playbooks:
+            if not self.get_playbook(pb.playbook_id):
+                self.save_playbook(pb)
 
     # --- Playbooks ---
     def save_playbook(self, playbook: CampaignPlaybook) -> None:
